@@ -12,6 +12,9 @@ namespace WowQuickLauncher
 {
     public partial class Form1 : Form
     {
+        // Version
+        string versionNum = "1.0a";
+
         // Windows API Stuff
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         static extern int SetForegroundWindow(IntPtr hwnd);
@@ -34,13 +37,15 @@ namespace WowQuickLauncher
         public Form1()
         {
             InitializeComponent();
-            processes = new List<System.Diagnostics.Process>();
+            Text = $"WoW Quick Launcher v{versionNum}";
+            chbxCloseProgramOnLaunch.Checked = true;
         }
 
         private void btnLaunch_Click(object sender, EventArgs e)
         {
             try
             {
+                processes = new List<System.Diagnostics.Process>();
                 string launchPath;
                 int loginWait;
                 bool enterWorld;
@@ -48,25 +53,26 @@ namespace WowQuickLauncher
                 List<AccountInfo> accounts = FileIO.GetAccountInfo(out launchPath, out enterWorld, out loginWait, out enterWorldWait);
 
                 if (launchPath == string.Empty)
-                    throw new System.IO.IOException("Path was not defined.");
+                    throw new System.IO.IOException("Path was not defined in \"accounts.txt\".");
 
                 // Launch a process for each account.
                 for (int i = 0; i < accounts.Count; i++)
                 {
-                    System.Threading.Thread.Sleep(250);
                     processes.Add(System.Diagnostics.Process.Start(launchPath));
+                    System.Threading.Thread.Sleep(250);
                 }
 
                 System.Threading.Thread.Sleep(loginWait);
 
-                // Log into each account.
+                // Log in to each account.
                 for (int i = 0; i < accounts.Count; i++)
                 {
-                    SetForegroundWindow(processes[i].MainWindowHandle);
-
                     // Move/resize window.
                     if (accounts[i].width > 0 && accounts[i].height > 0)
                         MoveWindow(processes[i].MainWindowHandle, accounts[i].x, accounts[i].y, accounts[i].width, accounts[i].height, true);
+
+                    SetForegroundWindow(processes[i].MainWindowHandle);
+                    System.Threading.Thread.Sleep(50);
 
                     // Enter username and password and login.
                     SendKeys.Send(accounts[i].username);
@@ -74,7 +80,7 @@ namespace WowQuickLauncher
                     SendKeys.Send(accounts[i].password);
                     SendKeys.Send("{ENTER}");
 
-                    System.Threading.Thread.Sleep(100);
+                    System.Threading.Thread.Sleep(250);
                 }
 
                 // Enter World
@@ -92,7 +98,8 @@ namespace WowQuickLauncher
                     SetForegroundWindow(processes[0].MainWindowHandle);
                 }
 
-                //Application.Exit();
+                if (chbxCloseProgramOnLaunch.Checked)
+                    Application.Exit();
             }
             catch (Exception ex)
             {

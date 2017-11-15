@@ -27,7 +27,7 @@ namespace WowQuickLauncher
 
     public class FileIO
     {
-        const string ACCOUNT_FILE_NAME = "accounts.txt";
+        public const string SETTINGS_FILE_NAME = "settings.txt";
 
         public static List<AccountInfo> GetAccountInfo(out string launchPath, out bool enterWorld, out int loginWait, out int enterWorldWait)
         {
@@ -37,7 +37,7 @@ namespace WowQuickLauncher
             loginWait = 10000;
             enterWorldWait = 5000;
 
-            using (StreamReader file = new StreamReader(ACCOUNT_FILE_NAME))
+            using (StreamReader file = new StreamReader(SETTINGS_FILE_NAME))
             {
                 string line = string.Empty;
                 while ((line = file.ReadLine()) != null)
